@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบคำนวณคะแนน - Round 2 Stats</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen py-8 px-4">
+  <div class="max-w-2xl mx-auto space-y-6">
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
+      <h1 class="text-2xl font-bold text-slate-800">ระบบคำนวณคะแนน - Round 2 Stats</h1>
+      <p class="text-slate-500 text-sm mt-1">คำนวณคะแนนรวมและคะแนนภารกิจตามเกณฑ์อัตโนมัติ</p>
+    </div>
+
+    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-emerald-900 text-sm space-y-2">
+      <p class="font-semibold">📐 เกณฑ์การคำนวณคะแนนภารกิจ:</p>
+      <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-emerald-800">
+        <li><strong>ภารกิจครบ:</strong> ((180 - เวลาที่ใช้) × จำนวนภารกิจ) / 4</li>
+        <li><strong>ภารกิจไม่ครบ:</strong> [((180 - เวลาที่ใช้) × จำนวนภารกิจ) / 4] / 2</li>
+      </ul>
+    </div>
+
+    <form id="scoreForm" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">คะแนน Check point</label>
+        <input type="number" id="checkpointScore" value="0" step="any" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">คะแนนปล่อยตัวยิงยังชีพ</label>
+        <input type="number" id="shootingScore" value="0" step="any" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">คะแนน Finish</label>
+        <input type="number" id="finishScore" value="0" step="any" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">คะแนนอื่นๆ (ถ้ามี)</label>
+        <input type="number" id="otherScore" value="0" step="any" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+      </div>
+
+      <hr class="my-4 border-slate-200">
+
+      <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <h3 class="font-semibold text-slate-700 text-sm">ข้อมูลภารกิจ (สำหรับคำนวณคะแนนภารกิจ)</h3>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">สถานะการทำภารกิจ</label>
+          <select id="isComplete" class="w-full p-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <option value="complete">ทำภารกิจครบ (เข้า Finish)</option>
+            <option value="incomplete">ทำภารกิจไม่ครบ (เข้า Finish)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">เวลาที่ใช้ (วินาที)</label>
+            <input type="number" id="timeUsed" value="0" max="180" min="0" step="any" class="w-full p-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">จำนวนภารกิจที่ทำได้</label>
+            <input type="number" id="tasksDone" value="0" min="0" step="any" class="w-full p-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          </div>
+        </div>
+      </div>
+
+      <button type="button" onclick="calculateScore()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
+        คำนวณคะแนน
+      </button>
+    </form>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <h2 class="text-lg font-bold text-slate-800 border-b pb-2">ผลลัพธ์การคำนวณ</h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+          <span class="text-xs text-slate-500 block">คะแนนภารกิจ</span>
+          <span id="missionResult" class="text-2xl font-bold text-emerald-600">0.00</span>
+        </div>
+
+        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+          <span class="text-xs text-emerald-700 block font-medium">คะแนนรวมรอบที่ 2 (Round 2 Stats)</span>
+          <span id="totalResult" class="text-3xl font-extrabold text-emerald-700">0.00</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function calculateScore() {
+      // ดึงค่าจาก Form
+      const checkpoint = parseFloat(document.getElementById('checkpointScore').value) || 0;
+      const shooting = parseFloat(document.getElementById('shootingScore').value) || 0;
+      const finish = parseFloat(document.getElementById('finishScore').value) || 0;
+      const other = parseFloat(document.getElementById('otherScore').value) || 0;
+
+      const isComplete = document.getElementById('isComplete').value;
+      const timeUsed = parseFloat(document.getElementById('timeUsed').value) || 0;
+      const tasksDone = parseFloat(document.getElementById('tasksDone').value) || 0;
+
+      // สูตรคะแนนภารกิจ
+      let missionScore = ((180 - timeUsed) * tasksDone) / 4;
+
+      if (isComplete === 'incomplete') {
+        missionScore = missionScore / 2;
+      }
+
+      // ป้องกันกรณีค่าติดลบ
+      if (missionScore < 0) missionScore = 0;
+
+      // คะแนนรวม
+      const totalScore = checkpoint + shooting + finish + other + missionScore;
+
+      // แสดงผลลัพธ์ (ทศนิยม 2 ตำแหน่ง)
+      document.getElementById('missionResult').innerText = missionScore.toFixed(2);
+      document.getElementById('totalResult').innerText = totalScore.toFixed(2);
+    }
+  </script>
+</body>
+  </html>
+  
